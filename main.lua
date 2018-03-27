@@ -1,7 +1,8 @@
 -- Title: LivesAndTimers
 -- Name: Clara Mackay
 -- Course: ICS2O/3C
--- This program...
+-- This program asks a math question, if you get a question wrong you lose a life, 
+-- and one of the 4 hearts disappear. 
 
 ----------------------------------------------------------------------
 
@@ -32,21 +33,25 @@ local points = 0
 local formula
 
 -- variables for the timer
-local totalSeconds = 5
-local secondsLeft = 5
+local totalSeconds = 10
+local secondsLeft = 10
 local clockText
 local countDownTimer
 
-local lives = 3 
+-- variables for the lives ands hearts
+local lives = 4
 local heart1 
 local heart2
 local heart3
 local heart4
 
+-- local variables for the sounds
+local correctSound = audio.loadSound("Sounds/wrongSound.mp3")
+local correctSoundChannel 
+
 -----------------------------------------------------------------
 --LOCAL FUNCTIONS
 -----------------------------------------------------------------
-
 local function UpdateTime()
 	-- decrement the number of seconds
 	secondsLeft = secondsLeft - 1
@@ -59,20 +64,6 @@ local function UpdateTime()
 		secondsLeft = totalSeconds 
 		lives = lives - 1 
 
-		-- ***IF THERE ARE NO NUMBERS LEFT, PLAY A LOSE SOUND, SHOW A 
-		-- "YOU LOSE" IMAGE AND CANCEL THE TIMER, REMOVE THE THIRD 
-		-- HEART BY  MAKING IT INVISIBLE
-		if (lives == 4) then 
-			heart4.isVisible = false 
-		elseif (lives == 3) then 
-			heart3.isVisible = false
-		elseif (lives == 2) then 
-			heart2.isVisible = false
-		elseif (lives == 1) then 
-			heart1.isVisible = false
-		end
-
-		--*** CALL THE FUNCTION TO ASK A NEW QUESTION
 
 	end
 end
@@ -86,8 +77,8 @@ end
 local function AskQuestion()
 
 	-- generate 2 random nuymbers between a max. and a min. number
-	randomNumber1 = math.random(10, 20)
-	randomNumber2 = math.random(10, 20)
+	randomNumber1 = math.random(1, 5)
+	randomNumber2 = math.random(1, 5)
 
 	-- randomizes formulas from addition to multiplication to subtraction
 
@@ -141,6 +132,46 @@ local function Points()
 
 end
 
+
+local function UpdateHearts()
+	-- ***IF THERE ARE NO LIVES LEFT, PLAY A LOSE SOUND, SHOW A 
+		-- "YOU LOSE" IMAGE AND CANCEL THE TIMER, REMOVE THE THIRD 
+		-- HEART BY  MAKING IT INVISIBLE
+		if (lives == 4) then 
+			heart1.isVisible = true
+			heart2.isVisible = true
+			heart3.isVisible = true
+			heart4.isVisible = true
+
+		elseif (lives == 3) then 
+			heart1.isVisible = true
+			heart2.isVisible = true
+			heart3.isVisible = true
+			heart4.isVisible = false
+
+		elseif (lives == 2) then 
+			heart1.isVisible = true
+			heart2.isVisible = true
+			heart3.isVisible = false
+			heart4.isVisible = false
+
+		elseif (lives == 1) then 
+			heart1.isVisible = true
+			heart2.isVisible = false 
+			heart3.isVisible = false
+			heart4.isVisible = false
+
+		elseif (lives == 0) then
+			gameOver.isVisible = true
+			correctSoundChannel = audio.play(correctSound)
+
+		end
+
+		-- call the function to ask the question
+			AskQuestion()
+end
+
+
 function NumericFieldListener( event )
 	-- User begins editing "numericField"
 	if (event.phase == "began") then
@@ -165,13 +196,13 @@ function NumericFieldListener( event )
 
 			else 
 				incorrectObject.isVisible = true 
-
+				lives = lives - 1 
+				UpdateHearts()
 				timer.performWithDelay(4000, HideInorrect)
 
 		end
 	end
 end
-
 
 
 --------------------------------------------------------------------------------
@@ -201,12 +232,12 @@ display.isVisible = true
 
 -- create the correct text object and make it invisible 
 correctObject = display.newText("Correct!", display.contentWidth/2, display.contentHeight*2/3, "Georgia", 80)
-correctObject:setTextColor(255/255, 255/255, 255/255)
+correctObject:setTextColor(0/255, 255/255, 0/255)
 correctObject.isVisible = false
 
 -- create the correct text object and make it invisible 
 incorrectObject = display.newText("Incorrect.", display.contentWidth/2, display.contentHeight*2/3, "Georgia", 80)
-incorrectObject:setTextColor(255/255, 255/255, 255/255)
+incorrectObject:setTextColor(255/255, 0/255, 0/255)
 incorrectObject.isVisible = false
 
 -- displays numeber of points 
@@ -220,6 +251,12 @@ numericField.inputType = "number"
 
 -- add the event listener for the numeric field
 numericField:addEventListener("userInput", NumericFieldListener)
+
+-- create the game over screen
+gameOver = display.newImageRect("Images/gameOver.png", 1000, 900)
+gameOver.x = display.contentWidth /2 
+gameOver.y = display.contentHeight /2
+gameOver.isVisible = false
 
 -------------------------------------------------------------------------------
 --FUNCTION CALLS
